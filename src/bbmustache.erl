@@ -84,7 +84,8 @@
 -type option()     :: {key_type, atom | binary | string}.
 %% - key_type: Specify the type of the key in {@link data/0}. Default value is `string'.
 
--type fun_data()  :: {data_fun, fun((data_key(), Default :: term()) -> data_value())}. 
+-type mf_args()       :: {module(), atom(), [term()]}.
+-type fun_data()  :: {data_fun, fun((data_key(), Default :: term()) -> data_value())} | {data_fun, mf_args()}.
 
 -ifdef(namespaced_types).
 -type maps_data() :: #{atom() => data_value()} | #{binary() => data_value()} | #{string() => data_value()}.
@@ -379,6 +380,8 @@ data_get(Dot, Data, _Default) when Dot =:= "."; Dot =:= '.'; Dot =:= <<".">> ->
     Data;
 data_get(Key, {data_fun, Fun}, Default) when is_function(Fun) ->
     Fun(Key, Default);
+data_get(Key, {data_fun, {M,F,A}}, Default) ->
+    erlang:apply(M, F, [Key, Default] ++ A);
 data_get(Key, Map, Default) when is_map(Map) ->
     maps:get(Key, Map, Default);
 data_get(Key, AssocList, Default) ->
@@ -398,6 +401,7 @@ data_get(Key, AssocList, Default) ->
 check_data_type([])           -> maybe;
 check_data_type([{_, _} | _]) -> true;
 check_data_type({data_fun, F}) when is_function(F) -> true;
+check_data_type({data_fun, {M,F,A}}) when is_atom(M), is_atom(F), is_list(A) -> true;
 check_data_type(Map)          -> is_map(Map).
 -else.
 check_data_type([])           -> maybe;

@@ -69,7 +69,17 @@ data_value() = <a href="#type-data">data()</a> | iodata() | number() | atom() | 
 
 
 <pre><code>
-fun_data() = {data_fun, fun((<a href="#type-data_key">data_key()</a>, Default::term()) -&gt; <a href="#type-data_value">data_value()</a>)}
+fun_data() = {data_fun, fun((<a href="#type-data_key">data_key()</a>, Default::term()) -&gt; <a href="#type-data_value">data_value()</a>)} | {data_fun, <a href="#type-mf_args">mf_args()</a>}
+</code></pre>
+
+
+
+
+### <a name="type-mf_args">mf_args()</a> ###
+
+
+<pre><code>
+mf_args() = {module(), atom(), [term()]}
 </code></pre>
 
 
