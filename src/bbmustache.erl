@@ -84,11 +84,13 @@
 -type option()     :: {key_type, atom | binary | string}.
 %% - key_type: Specify the type of the key in {@link data/0}. Default value is `string'.
 
+-type fun_data()  :: {data_fun, fun((data_key(), Default :: term()) -> data_value())}. 
+
 -ifdef(namespaced_types).
 -type maps_data() :: #{atom() => data_value()} | #{binary() => data_value()} | #{string() => data_value()}.
--type data()      :: maps_data() | assoc_data().
+-type data()      :: maps_data() | assoc_data() | fun_data().
 -else.
--type data()      :: assoc_data().
+-type data()      :: assoc_data() | fun_data().
 -endif.
 %% All key in assoc list or maps must be same type.
 %% @see render/2
@@ -375,6 +377,8 @@ convert_keytype(KeyBin, Options) ->
 -ifdef(namespaced_types).
 data_get(Dot, Data, _Default) when Dot =:= "."; Dot =:= '.'; Dot =:= <<".">> ->
     Data;
+data_get(Key, {data_fun, Fun}, Default) when is_function(Fun) ->
+    Fun(Key, Default);
 data_get(Key, Map, Default) when is_map(Map) ->
     maps:get(Key, Map, Default);
 data_get(Key, AssocList, Default) ->
@@ -393,6 +397,7 @@ data_get(Key, AssocList, Default) ->
 -ifdef(namespaced_types).
 check_data_type([])           -> maybe;
 check_data_type([{_, _} | _]) -> true;
+check_data_type({data_fun, F}) when is_function(F) -> true;
 check_data_type(Map)          -> is_map(Map).
 -else.
 check_data_type([])           -> maybe;
